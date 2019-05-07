@@ -6,7 +6,14 @@ namespace PhotosForGrandpa
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Hallo!");
+            Console.WriteLine();
+
+            Console.Write("Vul hier het thema in van de foto's/video's: ");
+
+            var foldername = Console.ReadLine();
+
+
         }
     }
 }
