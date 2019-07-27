@@ -1,15 +1,22 @@
 ﻿using Mecha.ViewModel.Attributes;
 using PhotosForGrandpa.WPF.Exceptions;
+using PhotosForGrandpa.WPF.Extensions;
+using Syroot.Windows.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 
 namespace PhotosForGrandpa.WPF.ViewModels
 {
     public class OrganizerViewModel
     {
-        private const string GooglePhotosDownloadFileName = "Photos.zip";
+        private const string _googlePhotosDownloadFileName = "Photos.zip";
+
+        private string ZipFileFolderPath => Path.Combine(KnownFolders.Downloads.Path, _googlePhotosDownloadFileName);
+        private string PhotoFolderPath => Path.Combine(KnownFolders.Pictures.Path, FolderName);
+        private string VideoFolderPath => Path.Combine(KnownFolders.Videos.Path, FolderName);
 
         [Readonly]
         public virtual string Intro =>
@@ -52,14 +59,11 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         private void Validate()
         {
-            var newImagesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), FolderName);
-            var newVideosFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), FolderName);
-
             try
             {
                 // https://stackoverflow.com/a/3137165/3013479
-                _ = Path.GetFullPath(newImagesFolder);
-                _ = Path.GetFullPath(newVideosFolder);
+                _ = Path.GetFullPath(PhotoFolderPath);
+                _ = Path.GetFullPath(VideoFolderPath);
 
                 if (FolderName.Contains("/") || FolderName.Contains("\\"))
                 {
@@ -74,18 +78,7 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         private IEnumerable<ZipArchiveEntry> UnzipFile()
         {
-            var expectedZipFilePath = Path.Combine(Syroot.Windows.IO.KnownFolders.DownloadsLocalized.Path, GooglePhotosDownloadFileName);
-
-            // Ensures that the last character on the extraction path
-            // is the directory separator char. 
-            // Without this, a malicious zip file could try to traverse outside of the expected
-            // extraction path.
-            if (!expectedZipFilePath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
-            {
-                expectedZipFilePath += Path.DirectorySeparatorChar;
-            }
-
-            using (ZipArchive archive = ZipFile.OpenRead(expectedZipFilePath))
+            using (ZipArchive archive = ZipFile.OpenRead(ZipFileFolderPath))
             {
                 return archive.Entries;
             }
@@ -93,18 +86,36 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         private void OrganizePhotos(IEnumerable<ZipArchiveEntry> filesInArchive)
         {
-            throw new NotImplementedException();
+            CopyZipArchiveEntriesToFolder(filesInArchive, PhotoFolderPath, ".jpg", ".png");
         }
 
         private void OrganizeVideos(IEnumerable<ZipArchiveEntry> filesInArchive)
         {
-            throw new NotImplementedException();
+            CopyZipArchiveEntriesToFolder(filesInArchive, VideoFolderPath, ".mp4");
+        }
+
+        private void CopyZipArchiveEntriesToFolder(IEnumerable<ZipArchiveEntry> filesInArchive, string pathToCopyTo, params string[] fileExtensions)
+        {
+            var files = filesInArchive.GetFilesWithExtension(fileExtensions);
+
+            if (!files.Any())
+            {
+                return;
+            }
+
+            // If there are, then create a folder in the afbeeldingen folder and move all the items to that folder
+            var createdDirectory = Directory.CreateDirectory(pathToCopyTo);
+
+            foreach (var file in files)
+            {
+                var fullPath = Path.Combine(createdDirectory.FullName, file.Name);
+                file.ExtractToFile(fullPath, false);
+            }
         }
 
         private void Cleanup()
         {
-            throw new NotImplementedException();
+               //TODO: Delete zip file
         }
-
     }
 }
