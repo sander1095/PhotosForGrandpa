@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PhotosForGrandpa.WPF\PhotosForGrandpa.WPF.csproj">
+      <Project>{3AF13CCA-51A5-4C29-AA25-798299C75BD6}</Project>
+      <Name>PhotosForGrandpa.WPF</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

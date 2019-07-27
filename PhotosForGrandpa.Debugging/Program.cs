@@ -1,10 +1,6 @@
 ﻿using PhotosForGrandpa.WPF.Exceptions;
 using PhotosForGrandpa.WPF.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PhotosForGrandpa.Debugging
 {
@@ -25,8 +21,10 @@ namespace PhotosForGrandpa.Debugging
             {
                 viewModel.Organiseer();
             }
+            // ErrorDialogExceptions are not caught because they are only meant as dialogues and not much info could be retrieved from them.
             catch (Exception e) when (!(e is ErrorDialogException))
             {
+                // If you do not break on user-managed exceptions, place a breakpoint here to be notified about exceptions
                 throw;
             }
         }
