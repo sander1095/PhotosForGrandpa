@@ -67,12 +67,12 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
                 if (FolderName.Contains("/") || FolderName.Contains("\\"))
                 {
-                    throw new AppException();
+                    throw new ErrorDialogException();
                 }
             }
             catch
             {
-                throw new AppException("De mapnaam mag de volgende karakters niet bevatten: \\ / : * ? \" < > |");
+                throw new ErrorDialogException("De mapnaam mag de volgende karakters niet bevatten: \\ / : * ? \" < > |");
             }
         }
 
