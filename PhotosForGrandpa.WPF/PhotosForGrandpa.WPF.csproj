@@ -38,6 +38,9 @@
     <Reference Include="Mecha.Wpf.Settings, Version=1.0.7141.4287, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MechaView.MahApps.0.0.152\lib\net45\Mecha.Wpf.Settings.dll</HintPath>
     </Reference>
+    <Reference Include="Syroot.KnownFolders, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syroot.Windows.IO.KnownFolders.1.2.1\lib\net452\Syroot.KnownFolders.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
