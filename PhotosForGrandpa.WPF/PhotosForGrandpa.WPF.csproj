@@ -57,6 +57,7 @@
     <Compile Include="App.cs" />
     <Compile Include="Exceptions\ErrorDialogException.cs" />
     <Compile Include="Extensions\ZipArchiveEntryExtensions.cs" />
+    <Compile Include="Helpers\ErrorDialog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\OrganizerViewModel.cs" />
   </ItemGroup>

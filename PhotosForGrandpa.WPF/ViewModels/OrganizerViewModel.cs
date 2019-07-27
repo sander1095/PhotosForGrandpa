@@ -1,6 +1,7 @@
 ﻿using Mecha.ViewModel.Attributes;
 using PhotosForGrandpa.WPF.Exceptions;
 using PhotosForGrandpa.WPF.Extensions;
+using PhotosForGrandpa.WPF.Helpers;
 using Syroot.Windows.IO;
 using System;
 using System.Collections.Generic;
@@ -34,27 +35,17 @@ namespace PhotosForGrandpa.WPF.ViewModels
         [Message("Klaar", "De foto's en/of video's zijn te vinden in de gekozen map!")]
         public void Organiseer()
         {
-            try
+            Validate();
+
+            using (var archive = ZipFile.OpenRead(ZipFileFolderPath))
             {
-                Validate();
+                var filesInArchive = archive.Entries;
 
-                using (var archive = ZipFile.OpenRead(ZipFileFolderPath))
-                {
-                    var filesInArchive = archive.Entries;
-
-                    OrganizePhotos(filesInArchive);
-                    OrganizeVideos(filesInArchive);
-                }
-                Cleanup();
+                OrganizePhotos(filesInArchive);
+                OrganizeVideos(filesInArchive);
             }
-            catch (Exception e) when (!(e is ErrorDialogException))
-            {
-                //TODO: Log error
 
-                throw new Exception(
-                    $"Er is iets fout gegaan! {Environment.NewLine}" +
-                    $"Nodig uw kleinzoon uit voor rijstepap en hij zal het oplossen!");
-            }
+            Cleanup();
         }
 
         private void Validate()
@@ -72,7 +63,7 @@ namespace PhotosForGrandpa.WPF.ViewModels
             }
             catch
             {
-                throw new ErrorDialogException("De mapnaam mag de volgende karakters niet bevatten: \\ / : * ? \" < > |");
+                ErrorDialog.ShowError("De mapnaam mag de volgende karakters niet bevatten: \\ / : * ? \" < > |");
             }
         }
 
