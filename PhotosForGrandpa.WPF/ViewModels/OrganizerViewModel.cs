@@ -35,17 +35,28 @@ namespace PhotosForGrandpa.WPF.ViewModels
         [Message("Klaar", "De foto's en/of video's zijn te vinden in de gekozen map!")]
         public void Organiseer()
         {
-            Validate();
-
-            using (var archive = ZipFile.OpenRead(ZipFileFolderPath))
+            try
             {
-                var filesInArchive = archive.Entries;
+                Validate();
 
-                OrganizePhotos(filesInArchive);
-                OrganizeVideos(filesInArchive);
+                using (var archive = ZipFile.OpenRead(ZipFileFolderPath))
+                {
+                    var filesInArchive = archive.Entries;
+
+                    OrganizePhotos(filesInArchive);
+                    OrganizeVideos(filesInArchive);
+                }
+
+                Cleanup();
             }
+            catch (Exception e) when (!(e is ErrorDialogException))
+            {
+                //TODO: Log error
 
-            Cleanup();
+                throw new Exception(
+                    $"Er is iets fout gegaan! {Environment.NewLine}" +
+                    $"Nodig uw kleinzoon uit voor rijstepap en hij zal het oplossen!");
+            }
         }
 
         private void Validate()
