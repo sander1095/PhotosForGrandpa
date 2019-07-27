@@ -1,4 +1,4 @@
-﻿using Mecha.ViewModel.Attributes;
+using Mecha.ViewModel.Attributes;
 using PhotosForGrandpa.WPF.Exceptions;
 using PhotosForGrandpa.WPF.Extensions;
 using Syroot.Windows.IO;
@@ -115,7 +115,7 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         private void Cleanup()
         {
-               //TODO: Delete zip file
+            File.Delete(ZipFileFolderPath);
         }
     }
 }
