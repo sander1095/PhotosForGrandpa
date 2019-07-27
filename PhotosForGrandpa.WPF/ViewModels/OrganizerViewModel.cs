@@ -52,6 +52,7 @@ namespace PhotosForGrandpa.WPF.ViewModels
             catch (Exception e) when (!(e is ErrorDialogException))
             {
                 //TODO: Log error
+                App.Logger.Error(e);
 
                 throw new Exception(
                     $"Er is iets fout gegaan! {Environment.NewLine}" +

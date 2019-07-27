@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="L, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\L.5.0.0\lib\netstandard2.0\L.dll</HintPath>
+    </Reference>
     <Reference Include="Mecha.Core, Version=1.0.7141.4286, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MechaView.MahApps.0.0.152\lib\net45\Mecha.Core.dll</HintPath>
     </Reference>
