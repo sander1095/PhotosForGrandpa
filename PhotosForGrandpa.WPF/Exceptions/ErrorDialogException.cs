@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PhotosForGrandpa.WPF.Exceptions
 {
@@ -10,13 +6,13 @@ namespace PhotosForGrandpa.WPF.Exceptions
     /// Used to show error dialogs and to avoid that a global exception handler 
     /// would swallow the exception and thus not display the error dialog
     /// </summary>
-    public class AppException : Exception
+    public class ErrorDialogException : Exception
     {
-        public AppException()
+        public ErrorDialogException()
         {
         }
 
-        public AppException(string message) : base(message)
+        public ErrorDialogException(string message) : base(message)
         {
         }
     }

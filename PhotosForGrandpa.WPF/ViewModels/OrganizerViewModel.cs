@@ -1,4 +1,4 @@
-using Mecha.ViewModel.Attributes;
+﻿using Mecha.ViewModel.Attributes;
 using PhotosForGrandpa.WPF.Exceptions;
 using PhotosForGrandpa.WPF.Extensions;
 using Syroot.Windows.IO;
@@ -12,9 +12,7 @@ namespace PhotosForGrandpa.WPF.ViewModels
 {
     public class OrganizerViewModel
     {
-        private const string _googlePhotosDownloadFileName = "Photos.zip";
-
-        private string ZipFileFolderPath => Path.Combine(KnownFolders.Downloads.Path, _googlePhotosDownloadFileName);
+        private string ZipFileFolderPath => Path.Combine(KnownFolders.Downloads.Path, "Photos.zip");
         private string PhotoFolderPath => Path.Combine(KnownFolders.Pictures.Path, FolderName);
         private string VideoFolderPath => Path.Combine(KnownFolders.Videos.Path, FolderName);
 
@@ -40,14 +38,16 @@ namespace PhotosForGrandpa.WPF.ViewModels
             {
                 Validate();
 
-                var filesInArchive = UnzipFile();
+                using (var archive = ZipFile.OpenRead(ZipFileFolderPath))
+                {
+                    var filesInArchive = archive.Entries;
 
-                OrganizePhotos(filesInArchive);
-                OrganizeVideos(filesInArchive);
-
+                    OrganizePhotos(filesInArchive);
+                    OrganizeVideos(filesInArchive);
+                }
                 Cleanup();
             }
-            catch (Exception e) when (!(e is AppException))
+            catch (Exception e) when (!(e is ErrorDialogException))
             {
                 //TODO: Log error
 
@@ -76,14 +76,6 @@ namespace PhotosForGrandpa.WPF.ViewModels
             }
         }
 
-        private IEnumerable<ZipArchiveEntry> UnzipFile()
-        {
-            using (ZipArchive archive = ZipFile.OpenRead(ZipFileFolderPath))
-            {
-                return archive.Entries;
-            }
-        }
-
         private void OrganizePhotos(IEnumerable<ZipArchiveEntry> filesInArchive)
         {
             CopyZipArchiveEntriesToFolder(filesInArchive, PhotoFolderPath, ".jpg", ".png");
@@ -103,13 +95,12 @@ namespace PhotosForGrandpa.WPF.ViewModels
                 return;
             }
 
-            // If there are, then create a folder in the afbeeldingen folder and move all the items to that folder
             var createdDirectory = Directory.CreateDirectory(pathToCopyTo);
 
             foreach (var file in files)
             {
                 var fullPath = Path.Combine(createdDirectory.FullName, file.Name);
-                file.ExtractToFile(fullPath, false);
+                file.ExtractToFile(fullPath, true);
             }
         }
 
