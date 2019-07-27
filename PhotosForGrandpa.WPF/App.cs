@@ -7,7 +7,7 @@ public class App : IApp
     {
         s.Title = "Foto en video's organiseren";
         s.Window.Width = 400;
-        s.Window.Height = 400;
+        s.Window.Height = 325;
         s.Content = typeof(OrganizerViewModel);
     }
 }
