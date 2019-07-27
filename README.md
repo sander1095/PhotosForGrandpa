@@ -52,3 +52,15 @@ My plans are the following:
 6. Repeat step 3 and 4 but now for videos.
 7. Delete the .zip and unzipped folder in the **Downloads** folder.
 8. Notify him everything is done!
+
+
+# How to run
+1. Build the project
+2. run `start-app` in the package manager console
+3. The project will start. You can manually run the project by executing the `.exe` in the `bin` folder.
+
+# How to debug
+Use the attach to process option in visual studio
+
+
+A BETTER README WITH MORE TECHNICAL INFO IS COMING SOON!
