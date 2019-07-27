@@ -1,4 +1,4 @@
-﻿using Mecha.ViewModel.Attributes;
+using Mecha.ViewModel.Attributes;
 using PhotosForGrandpa.WPF.Exceptions;
 using PhotosForGrandpa.WPF.Extensions;
 using PhotosForGrandpa.WPF.Helpers;
@@ -56,7 +56,9 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
                 throw new Exception(
                     $"Er is iets fout gegaan! {Environment.NewLine}" +
-                    $"Nodig uw kleinzoon uit voor rijstepap en hij zal het oplossen!");
+                    $"Nodig uw kleinzoon uit voor rijstepap en hij zal het oplossen!{Environment.NewLine}" +
+                    $"{Environment.NewLine}" +
+                    $"Gebruik de handleiding om de foto's/video's met de hand te organiseren.");
             }
         }
 
