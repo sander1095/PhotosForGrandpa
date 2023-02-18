@@ -13,7 +13,7 @@ namespace PhotosForGrandpa.WPF.ViewModels
 {
     public class OrganizerViewModel
     {
-        private string ZipFileFolderPath => Path.Combine(KnownFolders.Downloads.Path, "Photos.zip");
+        private string ZipFileFolderPath => Path.Combine(KnownFolders.Downloads.Path, "Photos-001.zip");
         private string PhotoFolderPath => Path.Combine(KnownFolders.Pictures.Path, FolderName);
         private string VideoFolderPath => Path.Combine(KnownFolders.Videos.Path, FolderName);
 
