@@ -15,19 +15,10 @@ namespace PhotosForGrandpa.WPF.ViewModels
     {
         private static readonly TimeSpan RecentFileThreshold = TimeSpan.FromHours(8);
 
-        private readonly AppConfig _config;
-
         public OrganizerViewModel()
         {
-            _config = AppConfig.Load();
+            AppConfig.Load();
         }
-
-        private string PhotoFolderPath => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-            FolderName ?? string.Empty);
-        private string VideoFolderPath => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
-            FolderName ?? string.Empty);
 
         public string Intro =>
             $"Dit programma zal ervoor zorgen dat gedownloade foto's van uw {Environment.NewLine}" +
@@ -43,7 +34,8 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         public void DownloadFotos()
         {
-            Process.Start(new ProcessStartInfo(_config.GooglePhotosUrl)
+            var config = AppConfig.Load();
+            Process.Start(new ProcessStartInfo(config.GooglePhotosUrl)
             {
                 UseShellExecute = true
             });
@@ -53,21 +45,22 @@ namespace PhotosForGrandpa.WPF.ViewModels
         {
             try
             {
-                Validate();
+                var config = AppConfig.Load();
+                Validate(config);
 
-                var zipPath = ResolveZipFilePath();
+                var zipPath = ResolveZipFilePath(config);
 
                 using (var archive = ZipFile.OpenRead(zipPath))
                 {
                     var filesInArchive = archive.Entries;
 
-                    OrganizePhotos(filesInArchive);
-                    OrganizeVideos(filesInArchive);
+                    OrganizePhotos(filesInArchive, config);
+                    OrganizeVideos(filesInArchive, config);
                 }
 
                 Cleanup(zipPath);
 
-                UpdateConfigIfAutoDetected(zipPath);
+                UpdateConfigIfAutoDetected(config, zipPath);
             }
             catch (Exception e) when (!(e is ErrorDialogException))
             {
@@ -86,11 +79,9 @@ namespace PhotosForGrandpa.WPF.ViewModels
                 $"Gebruik de handleiding om de foto's/video's met de hand te organiseren.");
         }
 
-        private string ResolveZipFilePath()
+        private string ResolveZipFilePath(AppConfig config)
         {
-            var downloadsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "Downloads");
+            var downloadsPath = config.DownloadPath;
             var photosZipFiles = Directory.GetFiles(downloadsPath, "Photos*.zip");
 
             if (photosZipFiles.Length == 0)
@@ -118,26 +109,32 @@ namespace PhotosForGrandpa.WPF.ViewModels
                 return photosZipFiles[0];
             }
 
-            return Path.Combine(downloadsPath, _config.ZipFileName);
+            return Path.Combine(downloadsPath, config.ZipFileName);
         }
 
         private static bool IsRecentFile(string path) =>
             DateTime.Now - File.GetCreationTime(path) < RecentFileThreshold;
 
-        private void UpdateConfigIfAutoDetected(string zipPath)
+        private string GetPhotoFolderPath(AppConfig config) =>
+            Path.Combine(config.PicturesPath, FolderName ?? string.Empty);
+
+        private string GetVideoFolderPath(AppConfig config) =>
+            Path.Combine(config.VideosPath, FolderName ?? string.Empty);
+
+        private void UpdateConfigIfAutoDetected(AppConfig config, string zipPath)
         {
             var zipFileName = Path.GetFileName(zipPath);
-            if (string.Equals(zipFileName, _config.ZipFileName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(zipFileName, config.ZipFileName, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            App.Logger.Info($"Google Photos changed zip name from '{_config.ZipFileName}' to '{zipFileName}'. Updating config.");
-            _config.ZipFileName = zipFileName;
-            _config.Save();
+            App.Logger.Info($"Google Photos changed zip name from '{config.ZipFileName}' to '{zipFileName}'. Updating config.");
+            config.ZipFileName = zipFileName;
+            config.Save();
         }
 
-        private void Validate()
+        private void Validate(AppConfig config)
         {
             var folderName = FolderName;
             if (string.IsNullOrWhiteSpace(folderName))
@@ -152,8 +149,8 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
             try
             {
-                _ = Path.GetFullPath(PhotoFolderPath);
-                _ = Path.GetFullPath(VideoFolderPath);
+                _ = Path.GetFullPath(GetPhotoFolderPath(config));
+                _ = Path.GetFullPath(GetVideoFolderPath(config));
             }
             catch (Exception e) when (e is ArgumentException || e is NotSupportedException || e is PathTooLongException)
             {
@@ -161,14 +158,14 @@ namespace PhotosForGrandpa.WPF.ViewModels
             }
         }
 
-        private void OrganizePhotos(IEnumerable<ZipArchiveEntry> filesInArchive)
+        private void OrganizePhotos(IEnumerable<ZipArchiveEntry> filesInArchive, AppConfig config)
         {
-            CopyZipArchiveEntriesToFolder(filesInArchive, PhotoFolderPath, ".jpg", ".png");
+            CopyZipArchiveEntriesToFolder(filesInArchive, GetPhotoFolderPath(config), ".jpg", ".png");
         }
 
-        private void OrganizeVideos(IEnumerable<ZipArchiveEntry> filesInArchive)
+        private void OrganizeVideos(IEnumerable<ZipArchiveEntry> filesInArchive, AppConfig config)
         {
-            CopyZipArchiveEntriesToFolder(filesInArchive, VideoFolderPath, ".mp4");
+            CopyZipArchiveEntriesToFolder(filesInArchive, GetVideoFolderPath(config), ".mp4");
         }
 
         private void CopyZipArchiveEntriesToFolder(IEnumerable<ZipArchiveEntry> filesInArchive, string pathToCopyTo, params string[] fileExtensions)

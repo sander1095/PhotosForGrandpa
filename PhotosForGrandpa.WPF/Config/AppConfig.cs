@@ -9,18 +9,31 @@ namespace PhotosForGrandpa.WPF.Config
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "PhotosForGrandpa",
             "config.cfg");
+        private static readonly string DefaultDownloadPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Downloads");
+        private static readonly string DefaultPicturesPath =
+            Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        private static readonly string DefaultVideosPath =
+            Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
 
         public const string DefaultZipFileName = "Photos-3-001.zip";
         public const string DefaultGooglePhotosUrl = "https://photos.google.com/login";
 
         public string ZipFileName { get; set; } = DefaultZipFileName;
         public string GooglePhotosUrl { get; set; } = DefaultGooglePhotosUrl;
+        public string DownloadPath { get; set; } = DefaultDownloadPath;
+        public string PicturesPath { get; set; } = DefaultPicturesPath;
+        public string VideosPath { get; set; } = DefaultVideosPath;
 
         public static AppConfig Load()
         {
             var config = new AppConfig();
             if (!File.Exists(ConfigFilePath))
+            {
+                config.Save();
                 return config;
+            }
 
             try
             {
@@ -37,6 +50,18 @@ namespace PhotosForGrandpa.WPF.Config
                         config.ZipFileName = value;
                     else if (key == nameof(GooglePhotosUrl) && !string.IsNullOrWhiteSpace(value))
                         config.GooglePhotosUrl = value;
+                    else if (key == nameof(DownloadPath) && !string.IsNullOrWhiteSpace(value))
+                    {
+                        config.DownloadPath = value;
+                    }
+                    else if (key == nameof(PicturesPath) && !string.IsNullOrWhiteSpace(value))
+                    {
+                        config.PicturesPath = value;
+                    }
+                    else if (key == nameof(VideosPath) && !string.IsNullOrWhiteSpace(value))
+                    {
+                        config.VideosPath = value;
+                    }
                 }
             }
             catch { }
@@ -52,7 +77,10 @@ namespace PhotosForGrandpa.WPF.Config
                 File.WriteAllLines(ConfigFilePath, new[]
                 {
                     $"{nameof(ZipFileName)}={ZipFileName}",
-                    $"{nameof(GooglePhotosUrl)}={GooglePhotosUrl}"
+                    $"{nameof(GooglePhotosUrl)}={GooglePhotosUrl}",
+                    $"{nameof(DownloadPath)}={DownloadPath}",
+                    $"{nameof(PicturesPath)}={PicturesPath}",
+                    $"{nameof(VideosPath)}={VideosPath}"
                 });
             }
             catch { }
