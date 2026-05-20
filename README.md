@@ -55,12 +55,12 @@ My plans are the following:
 
 
 # How to run
-1. Build the project
-2. run `start-app` in the package manager console
-3. The project will start. You can manually run the project by executing the `.exe` in the `bin` folder.
+1. Install the .NET 10 SDK on Windows.
+2. Run `dotnet run --project .\PhotosForGrandpa.WPF\PhotosForGrandpa.WPF.csproj`
+3. The app opens as a normal Windows desktop application.
 
-# How to debug
-Use the attach to process option in visual studio
+# Releasing
+See `RELEASE.MD` for the exact self-contained publish command and output path.
 
 
 A BETTER README WITH MORE TECHNICAL INFO IS COMING SOON!

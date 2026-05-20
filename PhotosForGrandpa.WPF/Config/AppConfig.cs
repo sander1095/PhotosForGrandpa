@@ -48,7 +48,7 @@ namespace PhotosForGrandpa.WPF.Config
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(ConfigFilePath));
+                Directory.CreateDirectory(Path.GetDirectoryName(ConfigFilePath)!);
                 File.WriteAllLines(ConfigFilePath, new[]
                 {
                     $"{nameof(ZipFileName)}={ZipFileName}",

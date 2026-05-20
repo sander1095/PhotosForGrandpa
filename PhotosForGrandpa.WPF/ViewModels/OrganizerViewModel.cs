@@ -1,11 +1,10 @@
-using Mecha.ViewModel.Attributes;
 using PhotosForGrandpa.WPF.Config;
 using PhotosForGrandpa.WPF.Exceptions;
 using PhotosForGrandpa.WPF.Extensions;
 using PhotosForGrandpa.WPF.Helpers;
-using Syroot.Windows.IO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -23,31 +22,33 @@ namespace PhotosForGrandpa.WPF.ViewModels
             _config = AppConfig.Load();
         }
 
-        private string PhotoFolderPath => Path.Combine(KnownFolders.Pictures.Path, FolderName);
-        private string VideoFolderPath => Path.Combine(KnownFolders.Videos.Path, FolderName);
+        private string PhotoFolderPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+            FolderName ?? string.Empty);
+        private string VideoFolderPath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
+            FolderName ?? string.Empty);
 
-        [Readonly]
-        public virtual string Intro =>
+        public string Intro =>
             $"Dit programma zal ervoor zorgen dat gedownloade foto's van uw {Environment.NewLine}" +
             $"telefoon automatisch gesorteerd worden in de Afbeeldingen {Environment.NewLine}" +
             $"en Video map!{Environment.NewLine}" +
             $"{Environment.NewLine}" +
-            $"Stap 1: Download foto's/video's van uw telefoon via de website op uw bureaublad{Environment.NewLine}" +
-            $"Stap 2: Wacht tot het downloaden voltooid is. Dit staat rechtsbovenin." +
-            $"Stap 3: Open dit programma{Environment.NewLine}" +
-            $"Stap 4: Kies een goede naam voor de map die gemaakt moet worden{Environment.NewLine}" +
-            $"Stap 5: Klik op de Organiseer knop";
+            $"Stap 1: Download foto's/video's van uw telefoon{Environment.NewLine}" +
+            $"Stap 2: Open dit programma{Environment.NewLine}" +
+            $"Stap 3: Kies een goede naam voor de map die gemaakt wordt{Environment.NewLine}" +
+            $"Stap 4: Klik op de Organiseer knop";
 
-        [TextInput("Mapnaam", Description = "Gran Canaria 2019", Mandatory = true)]
-        public virtual string FolderName { get; set; }
+        public string? FolderName { get; set; }
 
-        [Action]
         public void DownloadFotos()
         {
-            System.Diagnostics.Process.Start(_config.GooglePhotosUrl);
+            Process.Start(new ProcessStartInfo(_config.GooglePhotosUrl)
+            {
+                UseShellExecute = true
+            });
         }
-        [Action]
-        [Message("Klaar", "De foto's en/of video's zijn te vinden in de gekozen map!")]
+
         public void Organiseer()
         {
             try
@@ -73,13 +74,12 @@ namespace PhotosForGrandpa.WPF.ViewModels
                 App.Logger.Error(e);
 
                 ThrowGenericError();
-                return;
             }
         }
 
         private static void ThrowGenericError()
         {
-            throw new Exception(
+            ErrorDialog.ShowError(
                 $"Er is iets fout gegaan! {Environment.NewLine}" +
                 $"Nodig uw kleinzoon uit voor rijstepap en hij zal het oplossen!{Environment.NewLine}" +
                 $"{Environment.NewLine}" +
@@ -88,7 +88,9 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         private string ResolveZipFilePath()
         {
-            var downloadsPath = KnownFolders.Downloads.Path;
+            var downloadsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Downloads");
             var photosZipFiles = Directory.GetFiles(downloadsPath, "Photos*.zip");
 
             if (photosZipFiles.Length == 0)
@@ -107,9 +109,8 @@ namespace PhotosForGrandpa.WPF.ViewModels
             {
                 var fileNames = photosZipFiles.Select(Path.GetFileName);
                 App.Logger.Error($"Multiple Photos zip files found: {string.Join(", ", fileNames)}");
-                ErrorDialog.ShowError(
-                    $"Er zijn meerdere zip-bestanden gevonden die beginnen met 'Photos' in de Downloads map.{Environment.NewLine}" +
-                    $"Verwijder alle bestanden behalve het bestand dat u wilt gebruiken.");
+
+                ThrowGenericError();
             }
 
             if (photosZipFiles.Length == 1 && IsRecentFile(photosZipFiles[0]))
@@ -138,18 +139,23 @@ namespace PhotosForGrandpa.WPF.ViewModels
 
         private void Validate()
         {
+            var folderName = FolderName;
+            if (string.IsNullOrWhiteSpace(folderName))
+            {
+                ErrorDialog.ShowError("Vul eerst een mapnaam in.");
+            }
+
+            if (folderName!.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                ErrorDialog.ShowError("De mapnaam mag de volgende karakters niet bevatten: \\ / : * ? \" < > |");
+            }
+
             try
             {
-                // https://stackoverflow.com/a/3137165/3013479
                 _ = Path.GetFullPath(PhotoFolderPath);
                 _ = Path.GetFullPath(VideoFolderPath);
-
-                if (FolderName.Contains("/") || FolderName.Contains("\\"))
-                {
-                    throw new ErrorDialogException();
-                }
             }
-            catch
+            catch (Exception e) when (e is ArgumentException || e is NotSupportedException || e is PathTooLongException)
             {
                 ErrorDialog.ShowError("De mapnaam mag de volgende karakters niet bevatten: \\ / : * ? \" < > |");
             }
