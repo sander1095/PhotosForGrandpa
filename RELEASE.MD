@@ -17,6 +17,14 @@ dotnet restore .\PhotosForGrandpa.sln
 dotnet publish .\PhotosForGrandpa.WPF\PhotosForGrandpa.WPF.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
 ```
 
+## GitHub Actions
+
+The repository now includes `.github/workflows/build-windows-exe.yml`.
+
+- It runs on pushes and pull requests to `main` and `master`
+- It can also be started manually with **Run workflow**
+- It uploads the published Windows build as the `windows-exe` artifact
+
 ## Output
 
 The release executable is created here:

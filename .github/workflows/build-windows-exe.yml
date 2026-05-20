@@ -1,0 +1,59 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: 10.0.x
+  BUILD_CONFIGURATION: Release
+  PROJECT_PATH: PhotosForGrandpa.WPF\PhotosForGrandpa.WPF.csproj
+  PUBLISH_DIR: artifacts\publish
+
+jobs:
+  publish-windows-exe:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: preview
+
+      - name: Restore
+        run: dotnet restore .\PhotosForGrandpa.sln
+
+      - name: Build
+        run: dotnet build .\PhotosForGrandpa.sln -c $env:BUILD_CONFIGURATION --no-restore
+
+      - name: Publish self-contained EXE
+        run: >
+          dotnet publish .\${{ env.PROJECT_PATH }}
+          -c $env:BUILD_CONFIGURATION
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          --no-build
+          -o .\${{ env.PUBLISH_DIR }}
+
+      - name: Upload published EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: ${{ env.PUBLISH_DIR }}
